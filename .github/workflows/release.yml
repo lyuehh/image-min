@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    name: macOS (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+            target: aarch64-apple-darwin
+          - arch: x86_64
+            runner: macos-15
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build application bundle
+        env:
+          MACOS_TARGET: ${{ matrix.target }}
+        run: ./scripts/package-macos.sh
+      - name: Create distribution archive
+        run: ditto -c -k --sequesterRsrc --keepParent dist/ImageMin.app "dist/ImageMin-${{ matrix.arch }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ImageMin-${{ matrix.arch }}
+          path: dist/ImageMin-${{ matrix.arch }}.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub release
+    needs: macos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ImageMin-*
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*.zip

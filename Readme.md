@@ -18,6 +18,24 @@
 cargo run --release
 ```
 
+## macOS 打包
+
+在 macOS 上运行：
+
+```bash
+./scripts/package-macos.sh
+open dist/ImageMin.app
+```
+
+脚本会编译 release 版本，在 `dist/ImageMin.app` 生成可双击打开的应用，并进行本机 ad-hoc 签名。若要使用 Apple Developer 证书签名以供其他用户分发，可指定签名身份：
+
+```bash
+MACOS_SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
+  ./scripts/package-macos.sh
+```
+
+推送 `v*` 标签（例如 `v0.1.0`）会触发 GitHub Actions，分别生成 Apple Silicon 和 Intel Mac 的 zip 包并附加到 GitHub Release。公开分发仍建议配置 Developer ID 证书并完成 Apple notarization；默认 CI 产物采用 ad-hoc 签名，首次打开时可能需要在系统设置的“隐私与安全性”中确认。
+
 ## 验证
 
 ```bash
