@@ -1,0 +1,16 @@
+[package]
+name = "image-min"
+version = "0.1.0"
+edition = "2024"
+description = "A small native image optimizer built with Rust and GPUI Kit"
+license = "MIT"
+
+[dependencies]
+anyhow = "1.0"
+gpui-kit = "0.7.1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+oxipng = { version = "9.1", default-features = false, features = ["parallel", "zopfli"] }
+
+[profile.release]
+lto = "thin"
+strip = true
